@@ -42,13 +42,14 @@ const Home = () => {
   const enhanceImage = async (image) => {
     const formData = new FormData();
     formData.append("image", image);
-
     const response = await fetch(`${backendURL}/upload`, {
       method: "POST",
       body: formData,
     });
 
+
     if (response.ok) {
+
       const enhancedImageBlob = await response.blob();
       return new File([enhancedImageBlob], "enhanced-image.jpg");
     } else {
