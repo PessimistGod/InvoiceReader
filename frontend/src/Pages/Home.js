@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Tesseract from "tesseract.js";
 import Loading from "../Components/Loading";
+import { backendURL } from "../Constants";
 
 const Home = () => {
   const [result, setResult] = useState("");
@@ -42,7 +43,7 @@ const Home = () => {
     const formData = new FormData();
     formData.append("image", image);
 
-    const response = await fetch("http://localhost:5000/upload", {
+    const response = await fetch(`${backendURL}/upload`, {
       method: "POST",
       body: formData,
     });
