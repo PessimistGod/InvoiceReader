@@ -8,7 +8,18 @@ const cors = require('cors');
 const app = express();
 const port = 5000;
 
-app.use(cors());
+
+app.use(express.json());
+
+
+const corsOptions = {
+    origin: ["https://invoice-reader.vercel.app","https://invoice-reader-backend.vercel.app", "http://localhost:3000"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 // Set up multer to handle file uploads
 const upload = multer({ dest: 'uploads/' });
 
