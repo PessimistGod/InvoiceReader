@@ -10,8 +10,8 @@ const Home = () => {
 
   useEffect(() => {
     const convertImageToText = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
         if (selectedImage) {
           // Send the selected image to the backend for enhancement
           const enhancedImage = await enhanceImage(selectedImage);
@@ -20,12 +20,11 @@ const Home = () => {
           const formattedText = data.text.replace(/\n/g, "<br />");
           setResult(formattedText);
         }
-        setIsLoading(false);
       } catch (error) {
         console.error("Error during OCR:", error);
         setResult("Error Reading Image");
+      } finally {
         setIsLoading(false);
-        // Handle the error (e.g., show an error message to the user)
       }
     };
 
@@ -34,26 +33,38 @@ const Home = () => {
 
   const handleImageChange = async (e) => {
     setIsLoading(true);
-    const enhancedImage = await enhanceImage(e.target.files[0]);
-    setSelectedImage(enhancedImage);
-    setIsLoading(false);
+    try {
+      const enhancedImage = await enhanceImage(e.target.files[0]);
+      setSelectedImage(enhancedImage);
+    } catch (error) {
+      console.error("Error enhancing image:", error);
+      setResult("Error Enhancing Image");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const enhanceImage = async (image) => {
-    const formData = new FormData();
-    formData.append("image", image);
-    const response = await fetch(`${backendURL}/upload`, {
-      method: "POST",
-      body: formData,
-    });
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      const response = await fetch(`${backendURL}/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
-
-    if (response.ok) {
-
-      const enhancedImageBlob = await response.blob();
-      return new File([enhancedImageBlob], "enhanced-image.jpg");
-    } else {
-      throw new Error("Error enhancing image");
+      if (response.ok) {
+        const enhancedImageBlob = await response.blob();
+        return new File([enhancedImageBlob], "enhanced-image.jpg");
+      } else {
+        throw new Error("Error enhancing image");
+      }
+    } catch (error) {
+      console.error("Error enhancing image:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
