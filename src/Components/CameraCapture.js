@@ -18,7 +18,7 @@ const CameraCapture = ({ setSelectedImage }) => {
     // Dynamically adjust aspect ratio based on screen size
     const handleResize = () => {
       const { innerWidth, innerHeight } = window;
-      setAspectRatio(innerWidth < innerHeight ? 4 / 3 : 3 / 4); // Adjust aspect ratio for portrait or landscape orientation
+      setAspectRatio(innerWidth < innerHeight ? 3 / 4 :  4 / 3); // Adjust aspect ratio for portrait or landscape orientation
     };
     handleResize(); // Call once to set initial aspect ratio
     window.addEventListener('resize', handleResize);
