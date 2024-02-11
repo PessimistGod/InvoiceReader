@@ -29,8 +29,8 @@ const CameraCapture = ({ setSelectedImage }) => {
     if (croppedAreaPixels) {
       const image = new Image();
       image.onload = () => {
-        const scaleX = image.naturalWidth / 640;
-        const scaleY = image.naturalHeight / 480;
+        const scaleX = image.naturalWidth / webcamRef.current.video.clientWidth;
+        const scaleY = image.naturalHeight / webcamRef.current.video.clientHeight;
         const canvas = document.createElement('canvas');
         canvas.width = croppedAreaPixels.width * scaleX;
         canvas.height = croppedAreaPixels.height * scaleY;
