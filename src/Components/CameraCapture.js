@@ -1,119 +1,150 @@
 import React, { useRef, useState } from 'react';
+import Cropper from 'react-easy-crop';
 import Webcam from 'react-webcam';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { BiCamera } from 'react-icons/bi';
+import { MdOutlineCameraswitch } from 'react-icons/md';
+import { FaSearchPlus, FaSearchMinus, FaCheck } from 'react-icons/fa';
+
+const CONTAINER_HEIGHT = 300;
 
 const CameraCapture = ({ setSelectedImage }) => {
   const webcamRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
-  const [crop, setCrop] = useState({ aspect: 4 / 3, unit: '%', width: 100 });
-  const [croppedImage, setCroppedImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [showSelected, setShowSelected] = useState(false);
 
   const captureImage = () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    setCapturedImage(imageSrc);
+  
+    // Create an image element
+    const image = new Image();
+    image.onload = () => {
+      // Create a canvas element
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+  
+      // Set canvas dimensions to desired size
+      canvas.width = 640; // Set to your desired width
+      canvas.height = 480; // Set to your desired height
+  
+      // Draw the image onto the canvas with the desired dimensions
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  
+      // Convert the canvas back to an image
+      const resizedImageSrc = canvas.toDataURL('image/jpeg');
+  
+      // Set the captured image to the resized image
+      setCapturedImage(resizedImageSrc);
+      setShowSelected(true);
+    };
+  
+    // Set the src attribute of the image element
+    image.src = imageSrc;
   };
-
+  
   const switchCamera = () => {
     setIsFrontCamera(!isFrontCamera);
   };
 
-  const closeImage = () => {
-    setCapturedImage(null);
-  };
-
-  const useImage = () => {
-    setSelectedImage(croppedImage || capturedImage);
-    setCapturedImage(null);
-    setCroppedImage(null);
-  };
-
-  const onCropChange = (newCrop) => {
-    setCrop(newCrop);
-  };
-
-  const onCropComplete = (crop) => {
-    makeClientCrop(crop);
-  };
-
-  const makeClientCrop = async (crop) => {
-    if (webcamRef.current && crop.width && crop.height) {
-      const croppedImageUrl = await getCroppedImg(
-        capturedImage,
-        crop,
-        'newFile.jpeg'
-      );
-      setCroppedImage(croppedImageUrl);
-    }
-  };
-
-  const getCroppedImg = (imageSrc, crop, fileName) => {
-    return new Promise((resolve, reject) => {
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    console.log(croppedArea, croppedAreaPixels);
+    if (croppedAreaPixels) {
       const image = new Image();
-      image.src = imageSrc;
-      image.onload = async () => {
+      image.onload = () => {
+        const scaleX = image.naturalWidth / 640; // Replace 640 with your desired width
+        const scaleY = image.naturalHeight / 480; // Replace 480 with your desired height
         const canvas = document.createElement('canvas');
-        const scaleX = image.naturalWidth / image.width;
-        const scaleY = image.naturalHeight / image.height;
-        canvas.width = crop.width * scaleX;
-        canvas.height = crop.height * scaleY;
+        canvas.width = croppedAreaPixels.width * scaleX;
+        canvas.height = croppedAreaPixels.height * scaleY;
         const ctx = canvas.getContext('2d');
-
         ctx.drawImage(
           image,
-          crop.x * scaleX,
-          crop.y * scaleY,
-          crop.width * scaleX,
-          crop.height * scaleY,
+          croppedAreaPixels.x * scaleX,
+          croppedAreaPixels.y * scaleY,
+          croppedAreaPixels.width * scaleX,
+          croppedAreaPixels.height * scaleY,
           0,
           0,
-          crop.width * scaleX,
-          crop.height * scaleY
+          croppedAreaPixels.width * scaleX,
+          croppedAreaPixels.height * scaleY
         );
-
-        const croppedImageBlob = await new Promise((resolve) =>
-          canvas.toBlob(resolve, 'image/jpeg')
-        );
-        resolve(URL.createObjectURL(croppedImageBlob));
+        canvas.toBlob(blob => setSelectedImage(blob), 'image/jpeg');
       };
-    });
+      image.src = capturedImage;
+    } else {
+      console.error('croppedAreaPixels is undefined');
+    }
+  };
+  
+  
+  
+
+  const handleZoomIn = () => {
+    setZoom(prevZoom => Math.min(prevZoom + 0.1, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prevZoom => Math.max(prevZoom - 0.1, 1));
   };
 
   return (
-    <div className="relative">
-      {capturedImage && (
+    <div className="relative bg-gray-200 rounded-lg overflow-hidden">
+      <Webcam
+        audio={false}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        videoConstraints={{ facingMode: isFrontCamera ? 'user' : 'environment' }}
+        width={640}
+        height={480}
+        className="object-cover w-full h-full"
+      />
+      <div className="absolute top-4 left-4 flex space-x-4">
+        <button onClick={captureImage} className="bg-gray-800 text-white py-2 px-4 rounded-lg flex items-center">
+          <BiCamera className="mr-2" /> Capture Image
+        </button>
+        <button onClick={switchCamera} className="bg-gray-800 text-white py-2 px-4 rounded-lg flex items-center">
+          <MdOutlineCameraswitch className="mr-2" /> Switch Camera
+        </button>
+      </div>
+      {capturedImage && showSelected && (
         <>
-          <ReactCrop
-            src={capturedImage}
+          <Cropper
+            image={capturedImage}
             crop={crop}
-            onChange={onCropChange}
-            onComplete={onCropComplete}
+            zoom={zoom}
+            aspect={4 / 3}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+            style={{
+              containerStyle: { width: '100%', height: '100%' },
+              mediaStyle: { maxHeight: '100%', maxWidth: '100%' },
+              cropAreaStyle: { borderColor: 'red' },
+            }}
+            classes={{
+              containerClassName: 'custom-container-class',
+              mediaClassName: 'custom-media-class',
+              cropAreaClassName: 'custom-crop-area-class',
+            }}
           />
-          <button onClick={closeImage} className="absolute top-4 left-4 bg-red-500 text-white py-2 px-4 rounded">
-            Close
-          </button>
-          <button onClick={useImage} className="absolute top-4 right-4 bg-green-500 text-white py-2 px-4 rounded">
-            Use Image
-          </button>
-        </>
-      )}
-      {!capturedImage && (
-        <>
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode: isFrontCamera ? 'user' : 'environment' }}
-            width={640}
-            height={480}
-          />
-          <button onClick={captureImage} className="absolute bottom-4 left-4 bg-gray-800 text-white py-2 px-4 rounded">
-            Capture Image
-          </button>
-          <button onClick={switchCamera} className="absolute bottom-4 right-4 bg-gray-800 text-white py-2 px-4 rounded">
-            Switch Camera
-          </button>
+          <div className="absolute top-4 right-4 space-y-4">
+            <button onClick={handleZoomIn} className="bg-blue-500 text-white py-2 px-4 flex items-center rounded-full justify-center">
+              <FaSearchPlus className="mr-2" />
+            </button>
+            <button onClick={handleZoomOut} className="bg-blue-500 text-white py-2 px-4 flex items-center rounded-full justify-center">
+              <FaSearchMinus className="mr-2" />
+            </button>
+          </div>
+          <div className="absolute bottom-4 right-4">
+            <button
+              onClick={() => onCropComplete()}
+              className="bg-green-500 text-white py-2 px-4 rounded-lg flex items-center"
+            >
+              <FaCheck className="mr-2" /> Approve
+            </button>
+          </div>
         </>
       )}
     </div>
