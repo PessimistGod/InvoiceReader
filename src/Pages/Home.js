@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Tesseract from 'tesseract.js';
 import Loading from '../Components/Loading';
+import CameraCapture from '../Components/CameraCapture';
 
 const Home = () => {
   const [result, setResult] = useState('');
@@ -41,6 +42,7 @@ const Home = () => {
   return (
     <div className='max-w-4xl mx-auto my-20'>
       <h1 className='font-bold text-5xl'>Extract Data From Image</h1>
+      <CameraCapture />
       <div className='relative flex mt-8'>
         <label htmlFor="imageInput" className='p-4 bg-black text-white border rounded-3xl cursor-pointer'>
           Upload Image
