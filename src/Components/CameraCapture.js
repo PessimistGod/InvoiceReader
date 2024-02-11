@@ -17,44 +17,20 @@ const CameraCapture = ({ setSelectedImage }) => {
 
   const captureImage = () => {
     const imageSrc = webcamRef.current.getScreenshot();
-  
-    // Create an image element
-    const image = new Image();
-    image.onload = () => {
-      // Create a canvas element
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-  
-      // Set canvas dimensions to desired size
-      canvas.width = 640; // Set to your desired width
-      canvas.height = 480; // Set to your desired height
-  
-      // Draw the image onto the canvas with the desired dimensions
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-  
-      // Convert the canvas back to an image
-      const resizedImageSrc = canvas.toDataURL('image/jpeg');
-  
-      // Set the captured image to the resized image
-      setCapturedImage(resizedImageSrc);
-      setShowSelected(true);
-    };
-  
-    // Set the src attribute of the image element
-    image.src = imageSrc;
+    setCapturedImage(imageSrc);
+    setShowSelected(true);
   };
-  
+
   const switchCamera = () => {
     setIsFrontCamera(!isFrontCamera);
   };
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    console.log(croppedArea, croppedAreaPixels);
     if (croppedAreaPixels) {
       const image = new Image();
       image.onload = () => {
-        const scaleX = image.naturalWidth / 640; // Replace 640 with your desired width
-        const scaleY = image.naturalHeight / 480; // Replace 480 with your desired height
+        const scaleX = image.naturalWidth / 640;
+        const scaleY = image.naturalHeight / 480;
         const canvas = document.createElement('canvas');
         canvas.width = croppedAreaPixels.width * scaleX;
         canvas.height = croppedAreaPixels.height * scaleY;
@@ -77,9 +53,6 @@ const CameraCapture = ({ setSelectedImage }) => {
       console.error('croppedAreaPixels is undefined');
     }
   };
-  
-  
-  
 
   const handleZoomIn = () => {
     setZoom(prevZoom => Math.min(prevZoom + 0.1, 3));
