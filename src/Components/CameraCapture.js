@@ -7,7 +7,7 @@ const CameraCapture = ({ setSelectedImage }) => {
   const webcamRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
-  const [crop, setCrop] = useState({ aspect: 1 });
+  const [crop, setCrop] = useState({ aspect: 4 / 3, unit: '%', width: 100 });
   const [croppedImage, setCroppedImage] = useState(null);
 
   const captureImage = () => {
@@ -29,40 +29,55 @@ const CameraCapture = ({ setSelectedImage }) => {
     setCroppedImage(null);
   };
 
-  const onCropChange = (crop) => {
-    setCrop(crop);
+  const onCropChange = (newCrop) => {
+    setCrop(newCrop);
   };
 
   const onCropComplete = (crop) => {
-    if (crop.width && crop.height) {
-      cropImage(crop);
+    makeClientCrop(crop);
+  };
+
+  const makeClientCrop = async (crop) => {
+    if (webcamRef.current && crop.width && crop.height) {
+      const croppedImageUrl = await getCroppedImg(
+        capturedImage,
+        crop,
+        'newFile.jpeg'
+      );
+      setCroppedImage(croppedImageUrl);
     }
   };
 
-  const cropImage = (crop) => {
-    const canvas = document.createElement('canvas');
-    const image = new Image();
-    image.src = capturedImage;
-    image.onload = () => {
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
-      const ctx = canvas.getContext('2d');
-      canvas.width = crop.width;
-      canvas.height = crop.height;
-      ctx.drawImage(
-        image,
-        crop.x * scaleX,
-        crop.y * scaleY,
-        crop.width * scaleX,
-        crop.height * scaleY,
-        0,
-        0,
-        crop.width,
-        crop.height
-      );
-      const croppedImageUrl = canvas.toDataURL('image/jpeg');
-      setCroppedImage(croppedImageUrl);
-    };
+  const getCroppedImg = (imageSrc, crop, fileName) => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.src = imageSrc;
+      image.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
+        canvas.width = crop.width * scaleX;
+        canvas.height = crop.height * scaleY;
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(
+          image,
+          crop.x * scaleX,
+          crop.y * scaleY,
+          crop.width * scaleX,
+          crop.height * scaleY,
+          0,
+          0,
+          crop.width * scaleX,
+          crop.height * scaleY
+        );
+
+        const croppedImageBlob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, 'image/jpeg')
+        );
+        resolve(URL.createObjectURL(croppedImageBlob));
+      };
+    });
   };
 
   return (
