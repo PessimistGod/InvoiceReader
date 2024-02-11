@@ -5,8 +5,6 @@ import { BiCamera } from 'react-icons/bi';
 import { MdOutlineCameraswitch } from 'react-icons/md';
 import { FaSearchPlus, FaSearchMinus, FaCheck } from 'react-icons/fa';
 
-const CONTAINER_HEIGHT = 300;
-
 const CameraCapture = ({ setSelectedImage }) => {
   const webcamRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -69,9 +67,7 @@ const CameraCapture = ({ setSelectedImage }) => {
         ref={webcamRef}
         screenshotFormat="image/jpeg"
         videoConstraints={{ facingMode: isFrontCamera ? 'user' : 'environment' }}
-        width={640}
-        height={480}
-        className="object-cover w-full h-full"
+        className="w-full h-full"
       />
       <div className="absolute top-4 left-4 flex space-x-4">
         <button onClick={captureImage} className="bg-gray-800 text-white py-2 px-4 rounded-lg flex items-center">
@@ -92,8 +88,8 @@ const CameraCapture = ({ setSelectedImage }) => {
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
             style={{
-              containerStyle: { width: '100%', height: '100%' },
-              mediaStyle: { maxHeight: '100%', maxWidth: '100%' },
+              containerStyle: { width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 },
+              mediaStyle: { maxWidth: '100%', maxHeight: '100%' },
               cropAreaStyle: { borderColor: 'red' },
             }}
             classes={{
