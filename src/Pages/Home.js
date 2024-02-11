@@ -38,7 +38,7 @@ const Home = () => {
   return (
     <div className="max-w-4xl mx-auto my-20">
       <h1 className="font-bold text-5xl mb-8 text-center">Extract Data From Image</h1>
-      <CameraCapture />
+      <CameraCapture setSelectedImage={setSelectedImage}/>
       <div className="relative flex justify-center mt-8">
         <label htmlFor="imageInput" className="p-4 bg-black text-white border rounded-3xl cursor-pointer">
           Upload Image
@@ -54,21 +54,22 @@ const Home = () => {
       </div>
 
       {selectedImage && (
-        <>
-          <div className="w-20 h-20 mx-auto mt-4">
-            <img src={URL.createObjectURL(selectedImage)} alt="Selected" />
-          </div>
+  <>
+    <div className="w-20 h-20 mx-auto mt-4">
+      <img src={typeof selectedImage === 'string' ? selectedImage : URL.createObjectURL(selectedImage)} alt="Selected" />
+    </div>
 
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <div className="text-center mt-4">
-              <h2 className="font-semibold mb-2">OCR Result:</h2>
-              <div dangerouslySetInnerHTML={{ __html: result }} className="text-left"></div>
-            </div>
-          )}
-        </>
-      )}
+    {isLoading ? (
+      <Loading />
+    ) : (
+      <div className="text-center mt-4">
+        <h2 className="font-semibold mb-2">OCR Result:</h2>
+        <div dangerouslySetInnerHTML={{ __html: result }} className="text-left"></div>
+      </div>
+    )}
+  </>
+)}
+
     </div>
   );
 };
