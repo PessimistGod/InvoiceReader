@@ -33,13 +33,6 @@ const CameraCapture = ({ setSelectedImage }) => {
     setCrop(crop);
   };
 
-  const onImageLoaded = (image) => {
-    const width = image.naturalWidth || image.width;
-    const height = image.naturalHeight || image.height;
-    const aspectRatio = width / height;
-    setCrop({ aspect: aspectRatio });
-  };
-
   const onCropComplete = (crop) => {
     if (crop.width && crop.height) {
       cropImage(crop);
@@ -81,7 +74,6 @@ const CameraCapture = ({ setSelectedImage }) => {
             crop={crop}
             onChange={onCropChange}
             onComplete={onCropComplete}
-            onImageLoaded={onImageLoaded}
           />
           <button onClick={closeImage} className="absolute top-4 left-4 bg-red-500 text-white py-2 px-4 rounded">
             Close
