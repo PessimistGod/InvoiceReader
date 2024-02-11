@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import Webcam from 'react-webcam';
 import { BiCamera } from 'react-icons/bi';
@@ -12,6 +12,18 @@ const CameraCapture = ({ setSelectedImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [showSelected, setShowSelected] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState(4 / 3); // Default aspect ratio
+
+  useEffect(() => {
+    // Dynamically adjust aspect ratio based on screen size
+    const handleResize = () => {
+      const { innerWidth, innerHeight } = window;
+      setAspectRatio(innerWidth < innerHeight ? 4 / 3 : 3 / 4); // Adjust aspect ratio for portrait or landscape orientation
+    };
+    handleResize(); // Call once to set initial aspect ratio
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const captureImage = () => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -83,7 +95,7 @@ const CameraCapture = ({ setSelectedImage }) => {
             image={capturedImage}
             crop={crop}
             zoom={zoom}
-            aspect={4 / 3}
+            aspect={aspectRatio}
             onCropChange={setCrop}
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
